@@ -51,10 +51,23 @@ void SystemCoreClockSetup(void)
   SystemCoreClockUpdate();
 }
 
+/* SYSTICK */
+uint32_t uwTick;
+#define TICKS_PER_SECOND 1000
+void SysTick_Handler(void) {
+  uint32_t uw_tick = uwTick + 1;
+  uwTick = uw_tick;
+}
+mp_uint_t mp_hal_ticks_ms(void) {
+    return uwTick;
+}
+
 int main(int argc, char **argv) {
 
     int stack_dummy;
     stack_top = (char*)&stack_dummy;
+
+    SysTick_Config(SystemCoreClock / TICKS_PER_SECOND);
 
     USB_Init();
 

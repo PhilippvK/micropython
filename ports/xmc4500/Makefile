@@ -32,6 +32,7 @@ include $(TOP)/py/py.mk
 # TODO: Git submodules
 
 CMSIS_DIR=$(LIB_DIR)/CMSIS/Infineon/$(SERIES)/Include
+CMSIS_MCU_HDR=$(CMSIS_DIR)/$(BOARD).h
 HAL_DIR=stmhal
 XMC_DIR=$(LIB_DIR)/XMCLib
 USB_DIR=$(LIB_DIR)/ThirdPartyLibraries/USBlib/USB
@@ -68,6 +69,7 @@ CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib -D$(MCU) $(CF
 CFLAGS += $(CFLAGS_CORTEX_M4)
 CFLAGS += $(COPT) 
 #CFLAGS += -O0 -std=gnu99 -Wall -fms-extensions -DUC_ID=4503 -DXMC4500_F100x1024 -DARM_MATH_CM4 -g3 -fmessage-length=0
+CFLAGS += -DXMC_HAL_H='<$(BOARD).h>'
 CFLAGS += -D__SKIP_LIBC_INIT_ARRAY
 #CFLAGS += -ansi
 #CFLAGS += -DMICROPY_HW_VTOR=$(TEXT0_ADDR)
@@ -233,6 +235,10 @@ SRC_C = \
 	uart_core.c \
 	uart_extra.c \
   help.c \
+  mphalport.c \
+  modmachine.c \
+  moduos.c \
+  modxmc.c \
   #$(XMC_DIR)/src/xmc_common.c \
   #$(XMC_DIR)/src/xmc_gpio.c \
   #$(XMC_DIR)/src/xmc_uart.c \
@@ -365,6 +371,7 @@ all: $(BUILD)/firmware.elf
 
 $(BUILD)/_frozen_mpy.c: frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
 	$(ECHO) "MISC freezing bytecode"
+	$(ECHO) $(Q)$(TOP)/tools/mpy-tool.py -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h $< > $@
 	#$(Q)$(TOP)/tools/mpy-tool.py -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h -mlongint-impl=none $< > $@
 	$(Q)$(TOP)/tools/mpy-tool.py -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h $< > $@
 

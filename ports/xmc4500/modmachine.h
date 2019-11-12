@@ -27,12 +27,13 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "modmachine.h"
+//#include "modmachine.h"
 #include "py/gc.h"
 #include "py/runtime.h"
 #include "py/objstr.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+/*
 #include "extmod/machine_mem.h"
 #include "extmod/machine_signal.h"
 #include "extmod/machine_pulse.h"
@@ -427,4 +428,4 @@ const mp_obj_module_t machine_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&machine_module_globals,
 };
-
+*/
