@@ -239,12 +239,16 @@ SRC_C = \
   modmachine.c \
   moduos.c \
   modxmc.c \
+  $(XMC_DIR)/src/xmc_gpio.c \
+  $(XMC_DIR)/src/xmc4_gpio.c \
+  pin_defs_xmc4500.c \
+  pin.c \
+  led.c \
   #$(XMC_DIR)/src/xmc_common.c \
   #$(XMC_DIR)/src/xmc_gpio.c \
   #$(XMC_DIR)/src/xmc_uart.c \
   #$(XMC_DIR)/src/xmc_usic.c \
   #$(XMC_DIR)/src/xmc4_scu.c \
-  #$(XMC_DIR)/src/xmc4_gpio.c \
   #$(XMC_DIR)/src/xmc_usbd.c \
   #$(USB_DIR)/Class/Device/CDCClassDevice.c \
   #$(USB_DIR)/Common/memcpy.c \

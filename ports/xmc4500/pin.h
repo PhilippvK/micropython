@@ -1,0 +1,131 @@
+/*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+#ifndef MICROPY_INCLUDED_XMC_PIN_H
+#define MICROPY_INCLUDED_XMC_PIN_H
+
+// This file requires pin_defs_xxx.h (which has port specific enums and
+// defines, so we include it here. It should never be included directly
+
+#include MICROPY_PIN_DEFS_PORT_H
+#include "py/obj.h"
+
+#define  GPIO_MODE_INPUT                        (0x00000000U)   /*!< Input Floating Mode                   */
+#define  GPIO_MODE_OUTPUT_PP                    (0x00000001U)   /*!< Output Push Pull Mode                 */
+#define  GPIO_MODE_OUTPUT_OD                    (0x00000011U)   /*!< Output Open Drain Mode                */
+#define  GPIO_MODE_AF_PP                        (0x00000002U)   /*!< Alternate Function Push Pull Mode     */
+#define  GPIO_MODE_AF_OD                        (0x00000012U)   /*!< Alternate Function Open Drain Mode    */
+
+#define  GPIO_MODE_ANALOG                       (0x00000003U)   /*!< Analog Mode  */
+
+#define  GPIO_MODE_IT_RISING                    ((uint32_t)0x10110000)   /*!< External Interrupt Mode with Rising edge trigger detection          */
+#define  GPIO_MODE_IT_FALLING                   ((uint32_t)0x10210000)   /*!< External Interrupt Mode with Falling edge trigger detection         */
+#define  GPIO_MODE_IT_RISING_FALLING            ((uint32_t)0x10310000)   /*!< External Interrupt Mode with Rising/Falling edge trigger detection  */
+
+#define  GPIO_MODE_EVT_RISING                   ((uint32_t)0x10120000)   /*!< External Event Mode with Rising edge trigger detection               */
+#define  GPIO_MODE_EVT_FALLING                  ((uint32_t)0x10220000)   /*!< External Event Mode with Falling edge trigger detection              */
+#define  GPIO_MODE_EVT_RISING_FALLING           ((uint32_t)0x10320000)   /*!< External Event Mode with Rising/Falling edge trigger detection       */
+
+#define  GPIO_NOPULL        (0x00000000U)   /*!< No Pull-up or Pull-down activation  */
+#define  GPIO_PULLUP        (0x00000001U)   /*!< Pull-up activation                  */
+#define  GPIO_PULLDOWN      (0x00000002U)   /*!< Pull-down activation                */
+
+#define IS_GPIO_MODE(MODE) (((MODE) == GPIO_MODE_INPUT)              ||\
+                            ((MODE) == GPIO_MODE_OUTPUT_PP)          ||\
+                            ((MODE) == GPIO_MODE_OUTPUT_OD)          ||\
+                            ((MODE) == GPIO_MODE_AF_PP)              ||\
+                            ((MODE) == GPIO_MODE_AF_OD)              ||\
+                            ((MODE) == GPIO_MODE_ANALOG))
+
+#define IS_GPIO_PULL(PULL) (((PULL) == GPIO_NOPULL) || ((PULL) == GPIO_PULLUP) || \
+                            ((PULL) == GPIO_PULLDOWN))
+
+#define IS_GPIO_AF(af)      ((af) >= 0 && (af) <= 7)
+
+typedef struct {
+  mp_obj_base_t base;
+  qstr name;
+  uint8_t idx;
+  uint8_t fn;
+  uint8_t unit;
+  uint8_t type;
+  void *reg; // The peripheral associated with this AF
+} pin_af_obj_t;
+
+typedef struct {
+  mp_obj_base_t base;
+  qstr name;
+  uint32_t port   : 3;
+  uint32_t pin    : 5;      // Some ARM processors use 32 bits/PORT
+  uint32_t num_af : 4;
+//  uint32_t adc_channel : 5; // Some ARM processors use 32 bits/PORT
+//  uint32_t adc_num  : 3;    // 1 bit per ADC
+  uint32_t pin_mask;
+  port_gpio_t *gpio;
+  XMC_GPIO_CONFIG_t *pin_mode;
+  const pin_af_obj_t *af;
+} pin_obj_t;
+
+extern const mp_obj_type_t pin_type;
+extern const mp_obj_type_t pin_af_type;
+
+// Include all of the individual pin objects
+//#include "genhdr/pins.h"
+
+typedef struct {
+  const char *name;
+  const pin_obj_t *pin;
+} pin_named_pin_t;
+
+extern const pin_named_pin_t pin_board_pins[];
+extern const pin_named_pin_t pin_cpu_pins[];
+
+//extern pin_map_obj_t pin_map_obj;
+
+typedef struct {
+    mp_obj_base_t base;
+    qstr name;
+    const pin_named_pin_t *named_pins;
+} pin_named_pins_obj_t;
+
+extern const mp_obj_type_t pin_board_pins_obj_type;
+extern const mp_obj_type_t pin_cpu_pins_obj_type;
+
+extern const mp_obj_dict_t pin_cpu_pins_locals_dict;
+extern const mp_obj_dict_t pin_board_pins_locals_dict;
+
+MP_DECLARE_CONST_FUN_OBJ_KW(pin_init_obj);
+
+void pin_init0(void);
+uint32_t pin_get_mode(const pin_obj_t *pin);
+uint32_t pin_get_pull(const pin_obj_t *pin);
+uint32_t pin_get_af(const pin_obj_t *pin);
+const pin_obj_t *pin_find(mp_obj_t user_obj);
+const pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name);
+const pin_af_obj_t *pin_find_af(const pin_obj_t *pin, uint8_t fn, uint8_t unit);
+const pin_af_obj_t *pin_find_af_by_index(const pin_obj_t *pin, mp_uint_t af_idx);
+const pin_af_obj_t *pin_find_af_by_name(const pin_obj_t *pin, const char *name);
+
+#endif // MICROPY_INCLUDED_XMC_PIN_H

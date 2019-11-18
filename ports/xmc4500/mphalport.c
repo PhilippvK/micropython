@@ -14,6 +14,40 @@ void mp_hal_set_interrupt_char(int c) {
   // you can't press Control-C and get your python script to stop.
 }
 
+void mp_hal_gpio_clock_enable(XMC_GPIO_PORT_t *gpio) {
+/*    #if defined(STM32L476xx) || defined(STM32L496xx)
+    if (gpio == GPIOG) {
+        // Port G pins 2 thru 15 are powered using VddIO2 on these MCUs.
+        HAL_PWREx_EnableVddIO2();
+    }
+    #endif
+
+    // This logic assumes that all the GPIOx_EN bits are adjacent and ordered in one register
+
+    #if defined(STM32F0)
+    #define AHBxENR AHBENR
+    #define AHBxENR_GPIOAEN_Pos RCC_AHBENR_GPIOAEN_Pos
+    #elif defined(STM32F4) || defined(STM32F7)
+    #define AHBxENR AHB1ENR
+    #define AHBxENR_GPIOAEN_Pos RCC_AHB1ENR_GPIOAEN_Pos
+    #elif defined(STM32H7)
+    #define AHBxENR AHB4ENR
+    #define AHBxENR_GPIOAEN_Pos RCC_AHB4ENR_GPIOAEN_Pos
+    #elif defined(STM32L0)
+    #define AHBxENR IOPENR
+    #define AHBxENR_GPIOAEN_Pos RCC_IOPENR_IOPAEN_Pos
+    #elif defined(STM32L4) || defined(STM32WB)
+    #define AHBxENR AHB2ENR
+    #define AHBxENR_GPIOAEN_Pos RCC_AHB2ENR_GPIOAEN_Pos
+    #endif
+
+    uint32_t gpio_idx = ((uint32_t)gpio - GPIOA_BASE) / (GPIOB_BASE - GPIOA_BASE);
+    RCC->AHBxENR |= 1 << (AHBxENR_GPIOAEN_Pos + gpio_idx);
+    volatile uint32_t tmp = RCC->AHBxENR; // Delay after enabling clock
+    (void)tmp;
+    */
+}
+
 /*
 // this table converts from HAL_StatusTypeDef to POSIX errno
 const byte mp_hal_status_to_errno_table[4] = {
@@ -106,39 +140,6 @@ void mp_hal_ticks_cpu_enable(void) {
     }
 }
 #endif
-
-void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
-    #if defined(STM32L476xx) || defined(STM32L496xx)
-    if (gpio == GPIOG) {
-        // Port G pins 2 thru 15 are powered using VddIO2 on these MCUs.
-        HAL_PWREx_EnableVddIO2();
-    }
-    #endif
-
-    // This logic assumes that all the GPIOx_EN bits are adjacent and ordered in one register
-
-    #if defined(STM32F0)
-    #define AHBxENR AHBENR
-    #define AHBxENR_GPIOAEN_Pos RCC_AHBENR_GPIOAEN_Pos
-    #elif defined(STM32F4) || defined(STM32F7)
-    #define AHBxENR AHB1ENR
-    #define AHBxENR_GPIOAEN_Pos RCC_AHB1ENR_GPIOAEN_Pos
-    #elif defined(STM32H7)
-    #define AHBxENR AHB4ENR
-    #define AHBxENR_GPIOAEN_Pos RCC_AHB4ENR_GPIOAEN_Pos
-    #elif defined(STM32L0)
-    #define AHBxENR IOPENR
-    #define AHBxENR_GPIOAEN_Pos RCC_IOPENR_IOPAEN_Pos
-    #elif defined(STM32L4) || defined(STM32WB)
-    #define AHBxENR AHB2ENR
-    #define AHBxENR_GPIOAEN_Pos RCC_AHB2ENR_GPIOAEN_Pos
-    #endif
-
-    uint32_t gpio_idx = ((uint32_t)gpio - GPIOA_BASE) / (GPIOB_BASE - GPIOA_BASE);
-    RCC->AHBxENR |= 1 << (AHBxENR_GPIOAEN_Pos + gpio_idx);
-    volatile uint32_t tmp = RCC->AHBxENR; // Delay after enabling clock
-    (void)tmp;
-}
 
 void mp_hal_pin_config(mp_hal_pin_obj_t pin_obj, uint32_t mode, uint32_t pull, uint32_t alt) {
     GPIO_TypeDef *gpio = pin_obj->gpio;

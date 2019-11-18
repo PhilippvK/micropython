@@ -16,6 +16,11 @@
 
 #include "VirtualSerial.h"
 
+#include "py/stackctrl.h"
+
+#include "led.h"
+#define MP_STACK_SIZE (1 * 1024)
+
 static char *stack_top;
 static char heap[16 * 1024];
 
@@ -58,20 +63,42 @@ void SysTick_Handler(void) {
   uint32_t uw_tick = uwTick + 1;
   uwTick = uw_tick;
 }
+
 mp_uint_t mp_hal_ticks_ms(void) {
     return uwTick;
 }
 
+void led_blink(xmc_led_t led, mp_uint_t count, mp_uint_t target) {
+    for (int i = 0 ; i < count ; i++ ){
+        mp_uint_t tick0 = mp_hal_ticks_ms()
+        while(( mp_hal_ticks_ms()-tick0) < target);
+        led_state(led, 1);
+        tick0 = mp_hal_ticks_ms()
+        while(( mp_hal_ticks_ms()-tick0) < target);
+        led_state(led, 0);
+    }
+}
+
 int main(int argc, char **argv) {
 
-    int stack_dummy;
+    volatile int stack_dummy;
     stack_top = (char*)&stack_dummy;
 
     SysTick_Config(SystemCoreClock / TICKS_PER_SECOND);
 
     USB_Init();
 
+    led_init();
+
+    led_state(XMC_LED1, 1);
+    led_state(XMC_LED2, 0);
 soft_reset:
+    // Stack limit should be less than real stack size, so we have a chance
+    // to recover from limit hit.  (Limit is measured in bytes.)
+    // Note: stack control relies on main thread being initialised above
+    mp_stack_set_top(stack_top);
+    mp_stack_set_limit(MP_STACK_SIZE - 1024);
+    //mp_stack_set_limit((mp_uint_t)((char*)&stack_dummy - 1024));
 
     #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
@@ -81,6 +108,8 @@ soft_reset:
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir
     mp_obj_list_init(mp_sys_argv, 0);
+
+    led_blink(XMC_LED2,2,1000);
 
     readline_init0();
 

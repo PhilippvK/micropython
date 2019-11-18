@@ -389,4 +389,7 @@ static inline mp_uint_t disable_irq(void) {
 
 // TODO: add more like in stm32/mpconfigport.h
 #define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8];
+    const char *readline_hist[8]; \
+    \
+    mp_obj_t pin_class_mapper; \
+    mp_obj_t pin_class_map_dict;
