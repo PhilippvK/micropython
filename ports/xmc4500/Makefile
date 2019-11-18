@@ -404,8 +404,10 @@ endif
 
 .PHONY: deploy
 
-deploy: $(BUILD)/firmware.elf
-	$(CROSS_COMPILE)gdb $(BUILD)/firmware.elf -ex "target remote :2331" -ex "monitor reset" -ex "load" -ex "monitor reset" -ex "monitor go"
+deploy: $(BUILD)/firmware.hex
+	echo "h;loadfile ${BUILD}/firmware.hex;r;g;q;" | $(SED) 's/;/\n/g' > $(BUILD)/JLinkCommands
+	JLinkExe -Device $(BOARD) -If SWD -Speed 1000 -CommanderScript $(BUILD)/JLinkCommands
+	rm $(BUILD)/JLinkCommands
 
 # MacOS Compatibility
 UNAME_S := $(shell uname -s)
@@ -444,7 +446,10 @@ deploy2: $(BUILD)/firmware.hex $(BUILD)/JLinkCommands
 #TEXT0_SECTIONS ?= .isr_vector .text .data
 
 debug: $(BUILD)/firmware.elf
-	$(CROSS_COMPILE)gdb $(BUILD)/firmware.elf -ex "target remote :2331" -ex "monitor reset" -ex "load" -ex "monitor reset" -ex "monitor go" -ex "layout asm" -ex "monitor reset" -ex "break main" -ex "until main"
+	JLinkGDBServer -device $(BOARD) -endian little -if SWD -speed 1000 -halt -logtofile -log JLinkLog -silent -vd &
+	sleep 1
+	$(CROSS_COMPILE)gdb $(BUILD)/firmware.elf -ex "target remote :2331" -ex "monitor reset" -ex "load" -ex "break main" -tui
+	killall JLinkGDBServer
 
 # Custom debugging via JLink
 
