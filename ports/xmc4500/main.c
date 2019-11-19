@@ -19,7 +19,7 @@
 #include "py/stackctrl.h"
 
 #include "led.h"
-#define MP_STACK_SIZE (1 * 1024)
+#define MP_STACK_SIZE (16 * 1024)
 
 static char *stack_top;
 static char heap[16 * 1024];
@@ -70,10 +70,10 @@ mp_uint_t mp_hal_ticks_ms(void) {
 
 void led_blink(xmc_led_t led, mp_uint_t count, mp_uint_t target) {
     for (int i = 0 ; i < count ; i++ ){
-        mp_uint_t tick0 = mp_hal_ticks_ms()
+        mp_uint_t tick0 = mp_hal_ticks_ms();
         while(( mp_hal_ticks_ms()-tick0) < target);
         led_state(led, 1);
-        tick0 = mp_hal_ticks_ms()
+        tick0 = mp_hal_ticks_ms();
         while(( mp_hal_ticks_ms()-tick0) < target);
         led_state(led, 0);
     }
@@ -109,7 +109,7 @@ soft_reset:
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir
     mp_obj_list_init(mp_sys_argv, 0);
 
-    led_blink(XMC_LED2,2,1000);
+    led_blink(XMC_LED2,50,100);
 
     readline_init0();
 
