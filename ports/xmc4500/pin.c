@@ -33,6 +33,9 @@
 #include "extmod/virtpin.h"
 #include "pin.h"
 //#include "extint.h"
+#include <xmc_scu.h>
+#include <xmc4_scu.h>
+#include <xmc_ccu4.h>
 
 /// \moduleref pyb
 /// \class Pin - control I/O pins

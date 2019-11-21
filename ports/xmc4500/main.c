@@ -19,6 +19,11 @@
 #include "py/stackctrl.h"
 
 #include "led.h"
+#include "led_pwm.h"
+// TODO
+#include <xmc_scu.h>
+#include <xmc4_scu.h>
+#include <xmc_ccu4.h>
 #define MP_STACK_SIZE (16 * 1024)
 
 static char *stack_top;
@@ -89,9 +94,40 @@ int main(int argc, char **argv) {
     USB_Init();
 
     led_init();
+    //led_pwm_init(XMC_LED1);
+    //led_pwm_init(XMC_LED2);
+    int8_t dir = 1;
+    uint16_t val = 0;
+    uint8_t i = 0;
+    while(i<5) {
+      for(int32_t waiter=(1<<5); waiter >= 0; waiter--);
+      val += dir;
+      //CCU40_CC43->CRS += dir;
+      //CCU40_CC42->CRS += dir;
+      //if (dir < 0 && CCU40_CC43->CRS == 0) {
+      //  dir = +1;
+      //} else if (dir > 0 && CCU40_CC43->CRS == 0xFFFF) {
+      //  dir = -1;
+      //}
+      if (dir < 0 && val == 0) {
+        dir = +1;
+        i++;
+        led_toggle(XMC_LED1);
+      } else if (dir > 0 && val == 0xFFFF) {
+        dir = -1;
+        i++;
+        led_toggle(XMC_LED1);
+      }
+      //led_set_intensity(XMC_LED1,val);
+      led_set_intensity(XMC_LED2,val);
+//      XMC_CCU4_EnableShadowTransfer(CCU40, XMC_CCU4_SHADOW_TRANSFER_SLICE_3);
+//      XMC_CCU4_EnableShadowTransfer(CCU40, XMC_CCU4_SHADOW_TRANSFER_SLICE_2);
+    }
+//    led_set_intensity(XMC_LED1,0xFFFF-);
+//    led_set_intensity(XMC_LED2,0xFFFF-2);
 
-    led_state(XMC_LED1, 1);
-    led_state(XMC_LED2, 0);
+    //led_state(XMC_LED1, 1);
+//    led_state(XMC_LED2, 0);
 soft_reset:
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
@@ -109,7 +145,7 @@ soft_reset:
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir
     mp_obj_list_init(mp_sys_argv, 0);
 
-    led_blink(XMC_LED2,50,100);
+  //  led_blink(XMC_LED2,50,100);
 
     readline_init0();
 
