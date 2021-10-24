@@ -241,9 +241,9 @@ typedef long mp_off_t;
 //#define MICROPY_PY_SYS_PLATFORM     "pyboard"
 //#endif
 #define MICROPY_PY_UERRNO           (1)
-//#ifndef MICROPY_PY_THREAD
-//#define MICROPY_PY_THREAD           (0)
-//#endif
+#ifndef MICROPY_PY_THREAD
+#define MICROPY_PY_THREAD           (0)
+#endif
 
 // extended modules
 //#define MICROPY_PY_UCTYPES          (1)
@@ -308,11 +308,11 @@ extern const struct _mp_obj_module_t mp_module_utime;
 #endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
+    { MP_ROM_QSTR(MP_QSTR_xmc), MP_ROM_PTR(&xmc_module) }, \
+    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
     XMC_BUILTIN_MODULE \
 
-/*    { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
-    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
+/*    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
     { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&machine_module) }, \
     SOCKET_BUILTIN_MODULE \
     NETWORK_BUILTIN_MODULE \
@@ -393,3 +393,13 @@ static inline mp_uint_t disable_irq(void) {
     \
     mp_obj_t pin_class_mapper; \
     mp_obj_t pin_class_map_dict;
+
+
+#define MICROPY_EVENT_POLL_HOOK \
+    do { \
+        extern void mp_handle_pending(void); \
+        mp_handle_pending(); \
+        __WFI(); \
+    } while (0);
+
+#define MICROPY_THREAD_YIELD()

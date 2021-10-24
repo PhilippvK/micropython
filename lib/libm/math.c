@@ -41,7 +41,7 @@ int __signbitf(float f) {
     return u.s;
 }
 
-#ifndef NDEBUG
+//#ifndef NDEBUG
 float copysignf(float x, float y) {
     float_s_t fx={.f = x};
     float_s_t fy={.f = y};
@@ -51,7 +51,8 @@ float copysignf(float x, float y) {
 
     return fx.f;
 }
-#endif
+//#endif
+// TODO
 
 static const float _M_LN10 = 2.30258509299404; // 0x40135d8e
 float log10f(float x) { return logf(x) / (float)_M_LN10; }

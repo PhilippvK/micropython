@@ -197,6 +197,8 @@ STATIC void led_pwm_deinit(int led) {
     //g->MODER = (g->MODER & ~(3 << (2 * pin))) | (mode << (2 * pin));
     //g->AFR[pin >> 3] = (g->AFR[pin >> 3] & ~(15 << (4 * (pin & 7)))) | (alt << (4 * (pin & 7)));
     led_pwm_state &= ~(1 << led);
+    XMC_GPIO_Init(xmc_led_obj[led].led_port, xmc_led_obj[led].led_pin, &LED_config);
+    XMC_GPIO_SetOutputLow(xmc_led_obj[led].led_port,xmc_led_obj[led].led_pin);
 }
 
 #else
@@ -221,7 +223,7 @@ void led_state(xmc_led_t led, int state) {
 
     #if LED_PWM_ENABLED
     if (led_pwm_is_enabled(led)) {
-        led_pwm_deinit(led);
+        led_pwm_deinit(led-1);
     }
     #endif
 
@@ -278,7 +280,6 @@ int led_get_intensity(xmc_led_t led) {
 
 void led_set_intensity(xmc_led_t led, mp_uint_t intensity) {
     #if LED_PWM_ENABLED
-    if (intensity > 0 && intensity < 0xFFFF) {
         const led_pwm_config_t *pwm_cfg = &led_pwm_config[led - 1];
 //        if (pwm_cfg->tim != NULL) {
             // set intensity using PWM pulse width
@@ -290,11 +291,12 @@ void led_set_intensity(xmc_led_t led, mp_uint_t intensity) {
 //            *LED_PWM_CCR(pwm_cfg) = 0xFFFF - intensity;
             return;
   //      }
-    }
-    #endif
+    #else
+
 
     // intensity not supported for this LED; just turn it on/off
     led_state(led, intensity > 0);
+    #endif
 }
 
 void led_debug(int n, int delay) {

@@ -20,6 +20,9 @@
 
 #include "led.h"
 #include "led_pwm.h"
+
+#include "systick.h"
+
 // TODO
 #include <xmc_scu.h>
 #include <xmc4_scu.h>
@@ -61,18 +64,6 @@ void SystemCoreClockSetup(void)
   SystemCoreClockUpdate();
 }
 
-/* SYSTICK */
-uint32_t uwTick;
-#define TICKS_PER_SECOND 1000
-void SysTick_Handler(void) {
-  uint32_t uw_tick = uwTick + 1;
-  uwTick = uw_tick;
-}
-
-mp_uint_t mp_hal_ticks_ms(void) {
-    return uwTick;
-}
-
 void led_blink(xmc_led_t led, mp_uint_t count, mp_uint_t target) {
     for (int i = 0 ; i < count ; i++ ){
         mp_uint_t tick0 = mp_hal_ticks_ms();
@@ -84,31 +75,24 @@ void led_blink(xmc_led_t led, mp_uint_t count, mp_uint_t target) {
     }
 }
 
-int main(int argc, char **argv) {
+void xmc_init(void) {
+  SysTick_Config(SystemCoreClock / TICKS_PER_SECOND);
+  uint32_t start_tick = HAL_GetTick();
 
-    volatile int stack_dummy;
-    stack_top = (char*)&stack_dummy;
+  USB_Init();
 
-    SysTick_Config(SystemCoreClock / TICKS_PER_SECOND);
+  led_init();
+  
+  systick_wait_at_least(start_tick, 200);
+}
 
-    USB_Init();
-
-    led_init();
-    //led_pwm_init(XMC_LED1);
-    //led_pwm_init(XMC_LED2);
+void fade_leds(void) {
     int8_t dir = 1;
     uint16_t val = 0;
     uint8_t i = 0;
-    while(i<5) {
+    while(i<10) {
       for(int32_t waiter=(1<<5); waiter >= 0; waiter--);
       val += dir;
-      //CCU40_CC43->CRS += dir;
-      //CCU40_CC42->CRS += dir;
-      //if (dir < 0 && CCU40_CC43->CRS == 0) {
-      //  dir = +1;
-      //} else if (dir > 0 && CCU40_CC43->CRS == 0xFFFF) {
-      //  dir = -1;
-      //}
       if (dir < 0 && val == 0) {
         dir = +1;
         i++;
@@ -118,17 +102,22 @@ int main(int argc, char **argv) {
         i++;
         led_toggle(XMC_LED1);
       }
-      //led_set_intensity(XMC_LED1,val);
       led_set_intensity(XMC_LED2,val);
-//      XMC_CCU4_EnableShadowTransfer(CCU40, XMC_CCU4_SHADOW_TRANSFER_SLICE_3);
-//      XMC_CCU4_EnableShadowTransfer(CCU40, XMC_CCU4_SHADOW_TRANSFER_SLICE_2);
     }
-//    led_set_intensity(XMC_LED1,0xFFFF-);
-//    led_set_intensity(XMC_LED2,0xFFFF-2);
+}
 
-    //led_state(XMC_LED1, 1);
-//    led_state(XMC_LED2, 0);
+int main(int argc, char **argv) {
+
+    volatile int stack_dummy;
+    stack_top = (char*)&stack_dummy;
+
+    xmc_init();
+
 soft_reset:
+    fade_leds();
+
+    led_state(XMC_LED1, 0);
+    led_state(XMC_LED2, 0);
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
     // Note: stack control relies on main thread being initialised above

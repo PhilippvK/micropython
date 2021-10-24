@@ -27,22 +27,22 @@
 #include <stdint.h>
 #include <string.h>
 
-/*
-#include "py/runtime.h"
-#include "py/objtuple.h"
-#include "py/objstr.h"
-#include "lib/timeutils/timeutils.h"
-#include "lib/oofatfs/ff.h"
-#include "lib/oofatfs/diskio.h"
-#include "extmod/misc.h"
-#include "extmod/vfs.h"
-#include "extmod/vfs_fat.h"
-#include "genhdr/mpversion.h"
-#include "rng.h"
-#include "usb.h"
-#include "uart.h"
-#include "portmodules.h"
 
+//#include "py/runtime.h"
+//#include "py/objtuple.h"
+//#include "py/objstr.h"
+//#include "lib/timeutils/timeutils.h"
+//#include "lib/oofatfs/ff.h"
+//#include "lib/oofatfs/diskio.h"
+//#include "extmod/misc.h"
+//#include "extmod/vfs.h"
+//#include "extmod/vfs_fat.h"
+//#include "genhdr/mpversion.h"
+//#include "rng.h"
+//#include "usb.h"
+//#include "uart.h"
+#include "portmodules.h"
+/*
 /// \module os - basic "operating system" services
 ///
 /// The `os` module contains functions for filesystem access and `urandom`.

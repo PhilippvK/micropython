@@ -21,6 +21,7 @@ include ../../py/mkenv.mk
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
+#QSTR_GLOBAL_DEPENDENCIES = mpconfigboard.h
 #TODO: mpconfigboard_common.h, mpconfigboard.h, pins_qstr.h, modstm_qstr.h
 
 # File containing description of content to be frozen into firmware.
@@ -237,13 +238,15 @@ SRC_C = \
   help.c \
   mphalport.c \
   modmachine.c \
-  moduos.c \
   modxmc.c \
+  modutime.c \
+  systick.c \
   $(XMC_DIR)/src/xmc_gpio.c \
   $(XMC_DIR)/src/xmc4_gpio.c \
   pin_defs_xmc4500.c \
   pin.c \
   led.c \
+  #moduos.c \
   #$(XMC_DIR)/src/xmc_common.c \
   #$(XMC_DIR)/src/xmc_gpio.c \
   #$(XMC_DIR)/src/xmc_uart.c \
@@ -307,8 +310,8 @@ SRC_S = \
 
 # TODO: test und extend
 SRC_HAL = $(addprefix $(HAL_DIR)/,\
-	)
-	#systick.c \
+  )
+#	systick.c \
 
 SRC_XMC = $(addprefix $(XMC_DIR)/src/,\
   xmc_common.c \
@@ -485,6 +488,7 @@ $(OBJ): | $(GEN_PINS_HDR)
 
 # With conditional pins, we may need to regenerate qstrdefs.h when config
 # options change.
+# TODO
 #$(HEADER_BUILD)/qstrdefs.generated.h: mpconfigboard.h
 
 main.c: $(GEN_CDCINF_HEADER)
